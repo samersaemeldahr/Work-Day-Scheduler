@@ -1,29 +1,58 @@
-
-var time = moment().format("dddd, MMMM Do, YYYY");
+//Show date and time
+var time = moment().format("dddd, MMMM Do, YYYY, h:mm A");
 $("#currentDay").text("Today is " + time);
 
 
 $(document).ready(function(){
-    var container = $('.container');
-    $('container').append('<div class="input-group input-group-lg"></div>');
-    $('input-group').append('<div class="input-group-prepend">')
-})
-/*
-WHEN I scroll down
-THEN I am presented with timeblocks for standard business hours
-WHEN I view the timeblocks for that day
-THEN each timeblock is color coded to indicate whether it is in the past, present, or future
-WHEN I click into a timeblock
-THEN I can enter an event
-WHEN I click the save button for that timeblock
-THEN the text for that event is saved in local storage
-WHEN I refresh the page
-THEN the saved events persist
 
-<div class="input-group input-group-lg">
-  <div class="input-group-prepend">
-    <span class="input-group-text" id="inputGroup-sizing-lg">Large</span>
-  </div>
-  <input type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm">
-</div>
-*/
+    // Get local storage data otherwise create an empty object
+    var textInput = JSON.parse(localStorage.getItem("tasks")) || {}
+
+    // Save event
+    $(".saveBtn").on("click", function () {
+       var task = $(this).prev().val()
+       var hour = $(this).prev().attr("id")
+ 
+       textInput[hour] = task
+
+       // Set local storage
+       localStorage.setItem("tasks", JSON.stringify(textInput))
+    })
+    
+    // Show input
+    for (var prop in textInput) {
+       $(`#${prop}`).val(textInput[prop])
+    }
+
+    // Change color function
+    function color() {
+
+        // Get time
+        var timeNow = moment().hours();
+  
+        // Color rows based on current time
+        $(".hour").each(function () {
+           var timeHour = parseInt($(this).attr("id"));
+
+           // Past
+           if (timeHour < timeNow) {
+              $(this).addClass("past");
+  
+            // Future
+           } else if (timeHour > timeNow) {
+              $(this).addClass("future");
+              $(this).removeClass("present");
+              $(this).removeClass("past");
+
+            // Present
+           } else if (timeHour === timeNow) {
+              $(this).addClass("present");
+              $(this).removeClass("past");
+              $(this).removeClass("future");
+  
+           }
+        });
+     }
+
+     color();
+})
